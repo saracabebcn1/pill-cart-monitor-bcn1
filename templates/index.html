@@ -45,6 +45,15 @@ body{font-family:Arial,sans-serif;background:#EAEDED;color:#232F3E;height:100vh;
 .ab-g{background:#1DB954;color:white}.ab-g:hover{background:#17a046}
 .ab-o{background:#FF9900;color:#111}.ab-o:hover{background:#e68a00}
 .tm{font-size:10px;color:#AAB7B8}
+
+.ann{display:none;background:#FEF3CD;border-bottom:2px solid #F0AD4E;padding:8px 20px;font-size:12px;color:#7D4E00;align-items:center;gap:10px;flex-shrink:0}
+.ann.show{display:flex}
+.ann strong{font-weight:700}
+.ann-edit{margin-left:auto;display:flex;gap:6px;align-items:center}
+.ann-edit input{font-size:12px;padding:4px 8px;border:1px solid #F0AD4E;border-radius:4px;width:320px;color:#333}
+.ann-edit button{font-size:11px;font-weight:600;padding:4px 10px;border:none;border-radius:4px;cursor:pointer}
+.ann-save{background:#FF9900;color:#111}.ann-save:hover{background:#e68a00}
+.ann-clear{background:#E74C3C;color:white}.ann-clear:hover{background:#c0392b}
 /* Modal */
 .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center}
 .ov.show{display:flex}
@@ -75,6 +84,15 @@ body{font-family:Arial,sans-serif;background:#EAEDED;color:#232F3E;height:100vh;
   <span class="rl">⚠ Waste: solo cambia el <strong>absorbente</strong></span>
   <span>🧴 Artículos encima → <strong style="color:#FF9900">Derrames</strong></span>
   <span>⏱ SLA max: <strong style="color:#FF9900">48h</strong></span>
+</div>
+
+<div class="ann" id="annBar">
+  <span>📢 <strong>Aviso del equipo Waste:</strong> <span id="annText"></span></span>
+  <div class="ann-edit" id="annEdit" style="display:none">
+    <input type="text" id="annInput" placeholder="Escribe un aviso para todos..." maxlength="280">
+    <button class="ann-save" onclick="saveAnn()">Publicar</button>
+    <button class="ann-clear" onclick="clearAnn()">Quitar aviso</button>
+  </div>
 </div>
 <div class="mn">
   <div class="mw">
@@ -251,7 +269,7 @@ function oM(e, cartId, zone) {
   document.getElementById("modal").classList.add("show");
 }
 function closeModal() { document.getElementById("modal").classList.remove("show"); }
-function toggleWT() { isWT = !isWT; renderRequests(lastData); }
+function toggleWT() { isWT = !isWT; renderRequests(lastData); var e=document.getElementById("annEdit"); if(e) e.style.display=isWT?"flex":"none"; if(isWT) loadAnn(); }
 
 function showToast(msg, ok) {
   var t = document.getElementById("toast");
@@ -363,8 +381,48 @@ function loadRequests() {
   });
 }
 
+
+function loadAnn() {
+  fetch("/api/announcement").then(function(r){ return r.json(); }).then(function(d){
+    var bar = document.getElementById("annBar");
+    var txt = document.getElementById("annText");
+    var inp = document.getElementById("annInput");
+    if (d.message) {
+      txt.textContent = d.message;
+      bar.classList.add("show");
+      if (inp) inp.value = d.message;
+    } else {
+      bar.classList.remove("show");
+    }
+    // Show edit controls if WT mode
+    var editDiv = document.getElementById("annEdit");
+    if (editDiv) editDiv.style.display = isWT ? "flex" : "none";
+  });
+}
+
+function saveAnn() {
+  var msg = document.getElementById("annInput").value.trim();
+  fetch("/api/announcement", {
+    method: "POST", headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({message: msg})
+  }).then(function(){ loadAnn(); showToast("Aviso publicado ✓", true); });
+}
+
+function clearAnn() {
+  fetch("/api/announcement", {
+    method: "POST", headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({message: ""})
+  }).then(function(){
+    document.getElementById("annBar").classList.remove("show");
+    document.getElementById("annInput").value = "";
+    showToast("Aviso eliminado", true);
+  });
+}
+
 loadRequests();
+loadAnn();
 setInterval(loadRequests, 30000);
+setInterval(loadAnn, 30000);
 
 document.getElementById("modal").addEventListener("click", function(e){
   if (e.target === this) closeModal();

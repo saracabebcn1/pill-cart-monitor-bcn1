@@ -95,5 +95,30 @@ def update_status(req_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+@app.route("/api/announcement")
+def get_announcement():
+    try:
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT value FROM site_config WHERE key='announcement'")
+                row = cur.fetchone()
+                return jsonify({"message": row[0] if row and row[0] else ""})
+    except Exception as e:
+        return jsonify({"message": ""}), 200
+
+@app.route("/api/announcement", methods=["POST"])
+def set_announcement():
+    data = request.json
+    msg = data.get("message", "").strip()[:280]
+    try:
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("UPDATE site_config SET value=%s, updated_at=NOW() WHERE key='announcement'", (msg,))
+                conn.commit()
+                return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     app.run(debug=False, host="0.0.0.0", port=10000)
