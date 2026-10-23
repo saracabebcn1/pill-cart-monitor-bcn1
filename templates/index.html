@@ -431,19 +431,33 @@ function renderRequests(data) {
     var ago = timeAgo(r.created_at);
     var div = document.createElement("div");
     div.className = "rc " + stClass;
-    var wtBtns = "";
-    if (isWT) {
-      if (r.status === "pending") {
-        wtBtns = '<button class="ab ab-r" onclick="upd(' + r.id + ',\'in_progress\')">En proceso</button>';
-      }
-      if (r.status === "in_progress") {
-        wtBtns = '<button class="ab ab-g" onclick="upd(' + r.id + ',\'done\')">Completado ✓</button>';
-      }
-      wtBtns += '<button class="ab ab-r" style="background:#E74C3C" onclick="upd(' + r.id + ',\'done\')">Cerrar</button>';
+
+    // Notes display
+    var notesHtml = '<div class="note-list">';
+    if (r.notes) {
+      r.notes.split("\n").forEach(function(n){ if(n.trim()) notesHtml += '<div class="note-item">' + n + '</div>'; });
+    } else {
+      notesHtml += '<div class="note-empty">Sin notas aún</div>';
     }
-    div.innerHTML = '<div class="ch"><span class="zp">' + r.cart_id + '</span><span class="cz">' + r.zone + '</span><span class="cp ' + stCls + '">' + stLabel + '</span></div>' +
-      '<div class="cb"><span class="ct">' + (r.notes || 'Sin notas') + '</span>' +
-      '<span class="tm">hace ' + ago + '</span>' + wtBtns + '</div>';
+    notesHtml += '</div>';
+
+    // WT controls
+    var wtHtml = "";
+    if (isWT) {
+      var stBtns = "";
+      if (r.status === "pending") stBtns = '<button class="ab ab-r" onclick="updNote(' + r.id + ',\'in_progress\')">▶ En proceso</button>';
+      if (r.status === "in_progress") stBtns = '<button class="ab ab-g" onclick="updNote(' + r.id + ',\'done\')">✓ Completado</button>';
+      wtHtml = '<div class="note-input-wrap">' +
+        '<input type="text" class="note-input" id="ni-' + r.id + '" placeholder="Escribe una nota..." maxlength="120">' +
+        '<button class="ab ab-o" onclick="addNote(' + r.id + ')">Enviar</button>' +
+        '</div>' +
+        '<div class="wt-btns">' + stBtns +
+        '<button class="ab" style="background:#E74C3C;color:white" onclick="updNote(' + r.id + ',\'done\')">✕ Cerrar</button>' +
+        '</div>';
+    }
+
+    div.innerHTML = '<div class="ch"><span class="zp">' + r.cart_id + '</span><span class="cz">' + r.zone + '</span><span class="cp ' + stCls + '">' + stLabel + '</span><span class="tm" style="margin-left:auto">hace ' + ago + '</span></div>' +
+      '<div class="cb">' + notesHtml + wtHtml + '</div>';
     list.appendChild(div);
   });
 }
