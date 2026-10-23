@@ -46,6 +46,15 @@ body{font-family:Arial,sans-serif;background:#EAEDED;color:#232F3E;height:100vh;
 .ab-o{background:#FF9900;color:#111}.ab-o:hover{background:#e68a00}
 .tm{font-size:10px;color:#AAB7B8}
 
+
+.note-list{width:100%;display:flex;flex-direction:column;gap:3px;margin-bottom:6px}
+.note-item{font-size:11px;color:#444;background:#F8F9FA;border-radius:4px;padding:4px 8px;border-left:3px solid #FF9900}
+.note-empty{font-size:11px;color:#AAB7B8;margin-bottom:6px;font-style:italic}
+.note-input-wrap{display:flex;gap:5px;width:100%;margin-bottom:6px}
+.note-input{flex:1;font-size:11px;padding:5px 8px;border:1px solid #D5D8DC;border-radius:4px;color:#333}
+.note-input:focus{outline:none;border-color:#FF9900}
+.wt-btns{display:flex;gap:5px;width:100%}
+.ab-o{background:#FF9900;color:#111}.ab-o:hover{background:#e68a00}
 .ann{display:none;background:#FEF3CD;border-bottom:2px solid #F0AD4E;padding:8px 20px;font-size:12px;color:#7D4E00;align-items:center;gap:10px;flex-shrink:0}
 .ann.show{display:flex}
 .ann strong{font-weight:700}
@@ -362,6 +371,40 @@ function renderRequests(data) {
       '<span class="tm">hace ' + ago + '</span>' + wtBtns + '</div>';
     list.appendChild(div);
   });
+}
+
+
+function addNote(id) {
+  var inp = document.getElementById("ni-" + id);
+  var note = inp ? inp.value.trim() : "";
+  if (!note) return;
+  var now = new Date();
+  var ts = now.getHours().toString().padStart(2,"0") + ":" + now.getMinutes().toString().padStart(2,"0");
+  var fullNote = "[" + ts + "] " + note;
+  // Get current notes for this request
+  var req = lastData.find(function(r){ return r.id === id; });
+  var existing = req && req.notes ? req.notes + "\n" + fullNote : fullNote;
+  fetch("/api/request/" + id + "/status", {
+    method: "POST", headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({status: req ? req.status : "pending", notes: existing})
+  }).then(function(){ inp.value = ""; loadRequests(); });
+}
+
+function updNote(id, status) {
+  var inp = document.getElementById("ni-" + id);
+  var note = inp ? inp.value.trim() : "";
+  var req = lastData.find(function(r){ return r.id === id; });
+  var existing = req && req.notes ? req.notes : "";
+  if (note) {
+    var now = new Date();
+    var ts = now.getHours().toString().padStart(2,"0") + ":" + now.getMinutes().toString().padStart(2,"0");
+    existing = existing ? existing + "\n[" + ts + "] " + note : "[" + ts + "] " + note;
+  }
+  if (status === "done") completedToday++;
+  fetch("/api/request/" + id + "/status", {
+    method: "POST", headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({status: status, notes: existing})
+  }).then(function(){ loadRequests(); });
 }
 
 function upd(id, status) {
