@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spill Cart Monitor BCN1</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#EAEDED;color:#232F3E;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.tb{background:#232F3E;color:white;display:flex;align-items:center;padding:0 20px;height:52px;gap:14px;flex-shrink:0}
+.bge{background:#FF9900;color:#111;font-weight:800;font-size:10px;padding:3px 8px;border-radius:4px}
+.tb h1{font-size:15px;font-weight:600;flex:1}
+.sp{display:flex;gap:8px}
+.spl{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;font-size:11px;color:#ccc}
+.sd{width:7px;height:7px;border-radius:50%}
+.do{background:#FF9900}.dw{background:#E74C3C}.dg{background:#1DB954}
+.rb{background:rgba(29,185,84,.2);border:1px solid #1DB954;color:#1DB954;font-size:11px;font-weight:600;padding:5px 14px;border-radius:20px;cursor:pointer}
+.rb:hover{background:#1DB954;color:white}
+.nb{background:#37475A;padding:7px 20px;display:flex;align-items:center;gap:24px;flex-shrink:0;font-size:11px;color:#AAB7B8}
+.rl strong{color:#FF9900}
+.mn{display:flex;flex:1;overflow:hidden}
+.mw{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#EAEDED}
+.ml{padding:8px 16px 4px;font-size:11px;color:#7F8C8D}
+.ma{flex:1;display:flex;align-items:center;justify-content:center;padding:10px 14px 14px;overflow:hidden}
+.ma svg{max-width:100%;max-height:100%;width:100%;height:100%}
+.sw{width:368px;background:white;border-left:1px solid #D5D8DC;display:flex;flex-direction:column;overflow:hidden}
+.sh{padding:12px 16px;background:#F2F3F4;border-bottom:1px solid #D5D8DC;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.sh h2{font-size:13px;font-weight:600;color:#232F3E}
+.bn{background:#FF9900;color:#111;border-radius:12px;padding:1px 9px;font-size:11px;font-weight:700}
+.sb{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px}
+.em{text-align:center;padding:50px 20px;color:#AAB7B8;font-size:12px;line-height:1.8}
+.rc{background:white;border:1px solid #D5D8DC;border-left:4px solid #D5D8DC;border-radius:6px;overflow:hidden}
+.rc.sp2{border-left-color:#FF9900}.rc.si{border-left-color:#2E86C1}.rc.sm{border-left-color:#E74C3C}
+.ch{display:flex;align-items:center;padding:8px 11px;gap:8px;background:#F8F9FA;border-bottom:1px solid #EAEDED}
+.zp{font-weight:700;font-size:10px;background:#232F3E;color:white;padding:2px 8px;border-radius:4px}
+.cz{font-size:11px;color:#7F8C8D;flex:1}
+.cp{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;white-space:nowrap}
+.cpp{background:#FEF9E7;color:#D68910;border:1px solid #F9E79F}
+.cpi{background:#EBF5FB;color:#2E86C1;border:1px solid #AED6F1}
+.cpm{background:#FDEDEC;color:#E74C3C;border:1px solid #F1948A}
+.cb{padding:8px 11px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ct{font-size:11px;color:#555;flex:1;min-width:100%}
+.ab{font-size:10px;font-weight:600;padding:4px 10px;border-radius:4px;cursor:pointer;border:none}
+.ab-r{background:#232F3E;color:white}.ab-r:hover{background:#37475A}
+.ab-g{background:#1DB954;color:white}.ab-g:hover{background:#17a046}
+.ab-o{background:#FF9900;color:#111}.ab-o:hover{background:#e68a00}
+.tm{font-size:10px;color:#AAB7B8}
+/* Modal */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center}
+.ov.show{display:flex}
+.od{background:white;border-radius:10px;padding:28px;width:340px;max-width:90vw}
+.od h3{font-size:16px;font-weight:700;margin-bottom:6px}
+.od p{font-size:12px;color:#7F8C8D;margin-bottom:20px}
+.od .zone-badge{display:inline-block;background:#232F3E;color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;margin-bottom:16px}
+.od-btns{display:flex;gap:10px;justify-content:flex-end}
+.od-btns button{padding:8px 18px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer}
+.btn-cancel{background:#F2F3F4;color:#555}.btn-cancel:hover{background:#e0e0e0}
+.btn-confirm{background:#FF9900;color:#111}.btn-confirm:hover{background:#e68a00}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#232F3E;color:white;padding:10px 20px;border-radius:8px;font-size:13px;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="tb">
+  <span class="bge">BCN1</span>
+  <h1>Spill Cart Monitor</h1>
+  <div class="sp">
+    <div class="spl"><div class="sd do"></div><span id="nO">0</span> activos</div>
+    <div class="spl"><div class="sd dw"></div><span id="nW">0</span> urgentes</div>
+    <div class="spl"><div class="sd dg"></div><span id="nD">0</span> completados</div>
+  </div>
+  <button class="rb" onclick="toggleWT()">Waste Team</button>
+</div>
+<div class="nb">
+  <span class="rl">⚠ Waste: solo cambia el <strong>absorbente</strong></span>
+  <span>🧴 Artículos encima → <strong style="color:#FF9900">Derrames</strong></span>
+  <span>⏱ SLA max: <strong style="color:#FF9900">48h</strong></span>
+</div>
+<div class="mn">
+  <div class="mw">
+    <div class="ml">Mapa BCN1 — clic en un carro para solicitar cambio de absorbente</div>
+    <div class="ma">
+      <svg viewBox="0 0 960 500" preserveAspectRatio="xMidYMid meet">
+        <!-- Background -->
+        <rect x="2" y="2" width="956" height="496" rx="10" fill="white" stroke="#BFC9CA" stroke-width="1.5"/>
+        <!-- DOCK header -->
+        <rect x="2" y="2" width="956" height="44" rx="10" fill="#232F3E"/>
+        <rect x="2" y="28" width="956" height="18" fill="#232F3E"/>
+        <text x="480" y="30" text-anchor="middle" font-size="12" fill="#AAB7B8" font-weight="700" letter-spacing="10">DOCK</text>
+        <!-- PACK WEST -->
+        <rect x="10" y="50" width="96" height="254" rx="5" fill="#F8F9FA" stroke="#D5D8DC" stroke-width="1.5"/>
+        <rect x="10" y="50" width="96" height="38" rx="5" fill="#2E4057"/>
+        <rect x="10" y="74" width="96" height="14" fill="#2E4057"/>
+        <text x="58" y="67" text-anchor="middle" font-size="11" fill="white" font-weight="700">PACK WEST</text>
+        <text x="58" y="81" text-anchor="middle" font-size="8" fill="#AAB7B8">Singles</text>
+        <line x1="10" y1="180" x2="106" y2="180" stroke="#EAEDED" stroke-width="1"/>
+        <line x1="10" y1="250" x2="106" y2="250" stroke="#EAEDED" stroke-width="1"/>
+        <!-- SLAM divider left -->
+        <rect x="115" y="50" width="12" height="254" rx="3" fill="#D5D8DC"/>
+        <!-- SORTER -->
+        <rect x="136" y="50" width="132" height="254" rx="5" fill="#F8F9FA" stroke="#D5D8DC" stroke-width="1.5"/>
+        <rect x="136" y="50" width="132" height="38" rx="5" fill="#2E4057"/>
+        <rect x="136" y="74" width="132" height="14" fill="#2E4057"/>
+        <text x="202" y="67" text-anchor="middle" font-size="11" fill="white" font-weight="700">SORTER</text>
+        <text x="202" y="81" text-anchor="middle" font-size="8" fill="#AAB7B8">Shipping</text>
+        <!-- SLAM divider right -->
+        <rect x="277" y="50" width="12" height="254" rx="3" fill="#D5D8DC"/>
+        <!-- PACK EAST -->
+        <rect x="298" y="50" width="96" height="254" rx="5" fill="#F8F9FA" stroke="#D5D8DC" stroke-width="1.5"/>
+        <rect x="298" y="50" width="96" height="38" rx="5" fill="#2E4057"/>
+        <rect x="298" y="74" width="96" height="14" fill="#2E4057"/>
+        <text x="346" y="67" text-anchor="middle" font-size="11" fill="white" font-weight="700">PACK EAST</text>
+        <text x="346" y="81" text-anchor="middle" font-size="8" fill="#AAB7B8">Singles</text>
+        <line x1="298" y1="180" x2="394" y2="180" stroke="#EAEDED" stroke-width="1"/>
+        <line x1="298" y1="250" x2="394" y2="250" stroke="#EAEDED" stroke-width="1"/>
+        <!-- RECEIVE Z1 -->
+        <rect x="403" y="50" width="176" height="254" rx="5" fill="#F8F9FA" stroke="#D5D8DC" stroke-width="1.5"/>
+        <rect x="403" y="50" width="176" height="38" rx="5" fill="#146EB4"/>
+        <rect x="403" y="74" width="176" height="14" fill="#146EB4"/>
+        <text x="491" y="67" text-anchor="middle" font-size="11" fill="white" font-weight="700">RECEIVE</text>
+        <text x="491" y="81" text-anchor="middle" font-size="8" fill="#AED6F1">Zona 1</text>
+        <!-- RECEIVE Z2 -->
+        <rect x="588" y="50" width="176" height="254" rx="5" fill="#F8F9FA" stroke="#D5D8DC" stroke-width="1.5"/>
+        <rect x="588" y="50" width="176" height="38" rx="5" fill="#146EB4"/>
+        <rect x="588" y="74" width="176" height="14" fill="#146EB4"/>
+        <text x="676" y="67" text-anchor="middle" font-size="11" fill="white" font-weight="700">RECEIVE</text>
+        <text x="676" y="81" text-anchor="middle" font-size="8" fill="#AED6F1">Zona 2</text>
+        <!-- RECEIVE Z3 -->
+        <rect x="773" y="50" width="180" height="254" rx="5" fill="#F8F9FA" stroke="#D5D8DC" stroke-width="1.5"/>
+        <rect x="773" y="50" width="180" height="38" rx="5" fill="#146EB4"/>
+        <rect x="773" y="74" width="180" height="14" fill="#146EB4"/>
+        <text x="863" y="67" text-anchor="middle" font-size="11" fill="white" font-weight="700">RECEIVE</text>
+        <text x="863" y="81" text-anchor="middle" font-size="8" fill="#AED6F1">Zona 3</text>
+        <!-- ZONA REFUGIO -->
+        <rect x="2" y="312" width="956" height="18" rx="3" fill="#BDC3C7"/>
+        <text x="480" y="325" text-anchor="middle" font-size="9" fill="#7F8C8D" font-weight="700" letter-spacing="6">ZONA REFUGIO</text>
+        <!-- VENDOR A -->
+        <rect x="10" y="338" width="146" height="154" rx="5" fill="#F8F9FA" stroke="#D5D8DC" stroke-width="1.5"/>
+        <rect x="10" y="338" width="146" height="38" rx="5" fill="#2E4057"/>
+        <rect x="10" y="362" width="146" height="14" fill="#2E4057"/>
+        <text x="83" y="355" text-anchor="middle" font-size="11" fill="white" font-weight="700">VENDOR</text>
+        <text x="83" y="369" text-anchor="middle" font-size="8" fill="#AAB7B8">Zona A</text>
+        <!-- VENDOR B -->
+        <rect x="165" y="338" width="146" height="154" rx="5" fill="#F8F9FA" stroke="#D5D8DC" stroke-width="1.5"/>
+        <rect x="165" y="338" width="146" height="38" rx="5" fill="#2E4057"/>
+        <rect x="165" y="362" width="146" height="14" fill="#2E4057"/>
+        <text x="238" y="355" text-anchor="middle" font-size="11" fill="white" font-weight="700">VENDOR</text>
+        <text x="238" y="369" text-anchor="middle" font-size="8" fill="#AAB7B8">Zona B</text>
+        <!-- AFE -->
+        <rect x="320" y="338" width="196" height="154" rx="5" fill="#F8F9FA" stroke="#D5D8DC" stroke-width="1.5"/>
+        <rect x="320" y="338" width="196" height="38" rx="5" fill="#2E4057"/>
+        <rect x="320" y="362" width="196" height="14" fill="#2E4057"/>
+        <text x="418" y="355" text-anchor="middle" font-size="11" fill="white" font-weight="700">AFE</text>
+        <text x="418" y="369" text-anchor="middle" font-size="8" fill="#AAB7B8"></text>
+        <!-- AFE 2.0 (no cart) -->
+        <rect x="525" y="338" width="430" height="154" rx="5" fill="#F8F9FA" stroke="#D5D8DC" stroke-width="1.5"/>
+        <rect x="525" y="338" width="430" height="38" rx="5" fill="#626567"/>
+        <rect x="525" y="362" width="430" height="14" fill="#626567"/>
+        <text x="740" y="355" text-anchor="middle" font-size="11" fill="white" font-weight="700">AFE 2.0</text>
+        <rect x="620" y="388" width="240" height="52" rx="6" fill="#E5E8E8"/>
+        <text x="740" y="418" text-anchor="middle" font-size="15" fill="#AAB7B8" font-weight="700">AFE 2.0</text>
+        <text x="740" y="445" text-anchor="middle" font-size="9" fill="#BFC9CA" font-style="italic">sin carro asignado</text>
+        <!-- Cart icons: pulse + circle + icon -->
+        <!-- PWS -->
+        <circle cx="58" cy="222" r="24" fill="rgba(255,153,0,.07)" id="pu-PWS"/>
+        <circle cx="58" cy="222" r="19" fill="white" stroke="#FF9900" stroke-width="2.5" id="cb-PWS" style="cursor:pointer" onclick="oM(event,'PWS','PACK WEST')"/>
+        <text x="58" y="218" text-anchor="middle" font-size="16" style="pointer-events:none">&#128717;</text>
+        <text x="58" y="232" text-anchor="middle" font-size="7" fill="#7F8C8D" style="pointer-events:none">PWS</text>
+        <!-- SOR -->
+        <circle cx="202" cy="222" r="24" fill="rgba(255,153,0,.07)" id="pu-SOR"/>
+        <circle cx="202" cy="222" r="19" fill="white" stroke="#FF9900" stroke-width="2.5" id="cb-SOR" style="cursor:pointer" onclick="oM(event,'SOR','SORTER')"/>
+        <text x="202" y="218" text-anchor="middle" font-size="16" style="pointer-events:none">&#128717;</text>
+        <text x="202" y="232" text-anchor="middle" font-size="7" fill="#7F8C8D" style="pointer-events:none">SOR</text>
+        <!-- PES -->
+        <circle cx="346" cy="222" r="24" fill="rgba(255,153,0,.07)" id="pu-PES"/>
+        <circle cx="346" cy="222" r="19" fill="white" stroke="#FF9900" stroke-width="2.5" id="cb-PES" style="cursor:pointer" onclick="oM(event,'PES','PACK EAST')"/>
+        <text x="346" y="218" text-anchor="middle" font-size="16" style="pointer-events:none">&#128717;</text>
+        <text x="346" y="232" text-anchor="middle" font-size="7" fill="#7F8C8D" style="pointer-events:none">PES</text>
+        <!-- REC1 -->
+        <circle cx="491" cy="222" r="24" fill="rgba(255,153,0,.07)" id="pu-REC1"/>
+        <circle cx="491" cy="222" r="19" fill="white" stroke="#FF9900" stroke-width="2.5" id="cb-REC1" style="cursor:pointer" onclick="oM(event,'REC1','RECEIVE Zona 1')"/>
+        <text x="491" y="218" text-anchor="middle" font-size="16" style="pointer-events:none">&#128717;</text>
+        <text x="491" y="232" text-anchor="middle" font-size="7" fill="#7F8C8D" style="pointer-events:none">REC1</text>
+        <!-- REC2 -->
+        <circle cx="676" cy="222" r="24" fill="rgba(255,153,0,.07)" id="pu-REC2"/>
+        <circle cx="676" cy="222" r="19" fill="white" stroke="#FF9900" stroke-width="2.5" id="cb-REC2" style="cursor:pointer" onclick="oM(event,'REC2','RECEIVE Zona 2')"/>
+        <text x="676" y="218" text-anchor="middle" font-size="16" style="pointer-events:none">&#128717;</text>
+        <text x="676" y="232" text-anchor="middle" font-size="7" fill="#7F8C8D" style="pointer-events:none">REC2</text>
+        <!-- REC3 -->
+        <circle cx="863" cy="222" r="24" fill="rgba(255,153,0,.07)" id="pu-REC3"/>
+        <circle cx="863" cy="222" r="19" fill="white" stroke="#FF9900" stroke-width="2.5" id="cb-REC3" style="cursor:pointer" onclick="oM(event,'REC3','RECEIVE Zona 3')"/>
+        <text x="863" y="218" text-anchor="middle" font-size="16" style="pointer-events:none">&#128717;</text>
+        <text x="863" y="232" text-anchor="middle" font-size="7" fill="#7F8C8D" style="pointer-events:none">REC3</text>
+        <!-- VEN-A -->
+        <circle cx="83" cy="440" r="24" fill="rgba(255,153,0,.07)" id="pu-VEN-A"/>
+        <circle cx="83" cy="440" r="19" fill="white" stroke="#FF9900" stroke-width="2.5" id="cb-VEN-A" style="cursor:pointer" onclick="oM(event,'VEN-A','VENDOR Zona A')"/>
+        <text x="83" y="436" text-anchor="middle" font-size="16" style="pointer-events:none">&#128717;</text>
+        <text x="83" y="450" text-anchor="middle" font-size="7" fill="#7F8C8D" style="pointer-events:none">VEN-A</text>
+        <!-- VEN-B -->
+        <circle cx="238" cy="440" r="24" fill="rgba(255,153,0,.07)" id="pu-VEN-B"/>
+        <circle cx="238" cy="440" r="19" fill="white" stroke="#FF9900" stroke-width="2.5" id="cb-VEN-B" style="cursor:pointer" onclick="oM(event,'VEN-B','VENDOR Zona B')"/>
+        <text x="238" y="436" text-anchor="middle" font-size="16" style="pointer-events:none">&#128717;</text>
+        <text x="238" y="450" text-anchor="middle" font-size="7" fill="#7F8C8D" style="pointer-events:none">VEN-B</text>
+        <!-- AFE -->
+        <circle cx="418" cy="440" r="24" fill="rgba(255,153,0,.07)" id="pu-AFE"/>
+        <circle cx="418" cy="440" r="19" fill="white" stroke="#FF9900" stroke-width="2.5" id="cb-AFE" style="cursor:pointer" onclick="oM(event,'AFE','AFE')"/>
+        <text x="418" y="436" text-anchor="middle" font-size="16" style="pointer-events:none">&#128717;</text>
+        <text x="418" y="450" text-anchor="middle" font-size="7" fill="#7F8C8D" style="pointer-events:none">AFE</text>
+      </svg>
+    </div>
+  </div>
+  <!-- Sidebar -->
+  <div class="sw">
+    <div class="sh">
+      <h2>Solicitudes</h2>
+      <span class="bn" id="reqCount">0</span>
+    </div>
+    <div class="sb" id="reqList">
+      <div class="em" id="emptyMsg">
+        &#128717;<br>Sin solicitudes<br>Clic en un carro del mapa
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm modal -->
+<div class="ov" id="modal">
+  <div class="od">
+    <h3>&#127749; Solicitar cambio de absorbente</h3>
+    <p>Se notificará al equipo Waste. SLA máximo 48h.</p>
+    <div class="zone-badge" id="modalZone">-</div>
+    <div class="od-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-confirm" onclick="confirmRequest()">Confirmar solicitud</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var pendingCart = null, pendingZone = null;
+var isWT = false;
+var CARTS = ["PWS","SOR","PES","REC1","REC2","REC3","VEN-A","VEN-B","AFE"];
+var ZONES = {"PWS":"PACK WEST","SOR":"SORTER","PES":"PACK EAST","REC1":"RECEIVE Zona 1","REC2":"RECEIVE Zona 2","REC3":"RECEIVE Zona 3","VEN-A":"VENDOR Zona A","VEN-B":"VENDOR Zona B","AFE":"AFE"};
+
+function oM(e, cartId, zone) {
+  pendingCart = cartId;
+  pendingZone = zone;
+  document.getElementById("modalZone").textContent = cartId + " — " + zone;
+  document.getElementById("modal").classList.add("show");
+}
+function closeModal() { document.getElementById("modal").classList.remove("show"); }
+function toggleWT() { isWT = !isWT; renderRequests(lastData); }
+
+function showToast(msg, ok) {
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.style.background = ok ? "#1DB954" : "#E74C3C";
+  t.classList.add("show");
+  setTimeout(function(){ t.classList.remove("show"); }, 3000);
+}
+
+function confirmRequest() {
+  closeModal();
+  fetch("/api/request", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({cart_id: pendingCart, zone: pendingZone})
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if (d.error) { showToast(d.error, false); }
+    else { showToast("Solicitud enviada. Waste Team avisado ✓", true); loadRequests(); }
+  }).catch(function(){ showToast("Error de conexión", false); });
+}
+
+function timeAgo(iso) {
+  var diff = (Date.now() - new Date(iso).getTime()) / 60000;
+  if (diff < 60) return Math.round(diff) + "m";
+  if (diff < 1440) return Math.round(diff/60) + "h";
+  return Math.round(diff/1440) + "d";
+}
+
+var lastData = [];
+var completedToday = 0;
+
+function renderRequests(data) {
+  lastData = data;
+  var list = document.getElementById("reqList");
+  var active = data.filter(function(r){ return r.status !== "done"; });
+  var urgent = active.filter(function(r){
+    return (Date.now() - new Date(r.created_at).getTime()) > 4*3600000;
+  });
+
+  document.getElementById("nO").textContent = active.length;
+  document.getElementById("nW").textContent = urgent.length;
+  document.getElementById("nD").textContent = completedToday;
+  document.getElementById("reqCount").textContent = active.length;
+
+  // Update cart colors in SVG
+  CARTS.forEach(function(c){
+    var cb = document.getElementById("cb-" + c);
+    var pu = document.getElementById("pu-" + c);
+    if (!cb) return;
+    var req = active.find(function(r){ return r.cart_id === c; });
+    if (!req) {
+      cb.setAttribute("stroke", "#FF9900");
+      cb.setAttribute("fill", "white");
+      if (pu) pu.setAttribute("fill", "rgba(255,153,0,.07)");
+    } else {
+      var isUrgent = (Date.now() - new Date(req.created_at).getTime()) > 4*3600000;
+      var col = req.status === "in_progress" ? "#2E86C1" : (isUrgent ? "#E74C3C" : "#FF9900");
+      cb.setAttribute("stroke", col);
+      cb.setAttribute("fill", col + "22");
+      if (pu) pu.setAttribute("fill", col.replace("#","rgba(") + ",.12)".replace("rgba(","rgba(").replace(",","").replace("",""));
+    }
+  });
+
+  if (active.length === 0) {
+    list.innerHTML = '<div class="em" id="emptyMsg">&#128717;<br>Sin solicitudes<br>Clic en un carro del mapa</div>';
+    return;
+  }
+
+  list.innerHTML = "";
+  active.forEach(function(r){
+    var isUrgent = (Date.now() - new Date(r.created_at).getTime()) > 4*3600000;
+    var stClass = r.status === "in_progress" ? "si" : (isUrgent ? "sm" : "sp2");
+    var stLabel = r.status === "in_progress" ? "En proceso" : (isUrgent ? "URGENTE" : "Pendiente");
+    var stCls = r.status === "in_progress" ? "cpi" : (isUrgent ? "cpm" : "cpp");
+    var ago = timeAgo(r.created_at);
+    var div = document.createElement("div");
+    div.className = "rc " + stClass;
+    var wtBtns = "";
+    if (isWT) {
+      if (r.status === "pending") {
+        wtBtns = '<button class="ab ab-r" onclick="upd(' + r.id + ',\'in_progress\')">En proceso</button>';
+      }
+      if (r.status === "in_progress") {
+        wtBtns = '<button class="ab ab-g" onclick="upd(' + r.id + ',\'done\')">Completado ✓</button>';
+      }
+      wtBtns += '<button class="ab ab-r" style="background:#E74C3C" onclick="upd(' + r.id + ',\'done\')">Cerrar</button>';
+    }
+    div.innerHTML = '<div class="ch"><span class="zp">' + r.cart_id + '</span><span class="cz">' + r.zone + '</span><span class="cp ' + stCls + '">' + stLabel + '</span></div>' +
+      '<div class="cb"><span class="ct">' + (r.notes || 'Sin notas') + '</span>' +
+      '<span class="tm">hace ' + ago + '</span>' + wtBtns + '</div>';
+    list.appendChild(div);
+  });
+}
+
+function upd(id, status) {
+  fetch("/api/request/" + id + "/status", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({status: status, notes: ""})
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if (status === "done") completedToday++;
+    loadRequests();
+  });
+}
+
+function loadRequests() {
+  fetch("/api/requests").then(function(r){ return r.json(); }).then(function(d){
+    if (!d.error) renderRequests(d);
+  });
+}
+
+loadRequests();
+setInterval(loadRequests, 30000);
+
+document.getElementById("modal").addEventListener("click", function(e){
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>
