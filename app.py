@@ -120,5 +120,15 @@ def set_announcement():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+@app.route("/api/wt-auth", methods=["POST"])
+def wt_auth():
+    data = request.json
+    pwd = data.get("password", "")
+    correct = os.environ.get("WT_PASSWORD", "waste2026")
+    if pwd == correct:
+        return jsonify({"ok": True})
+    return jsonify({"ok": False}), 401
+
 if __name__ == "__main__":
     app.run(debug=False, host="0.0.0.0", port=10000)

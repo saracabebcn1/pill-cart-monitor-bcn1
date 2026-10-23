@@ -55,6 +55,17 @@ body{font-family:Arial,sans-serif;background:#EAEDED;color:#232F3E;height:100vh;
 .note-input:focus{outline:none;border-color:#FF9900}
 .wt-btns{display:flex;gap:5px;width:100%}
 .ab-o{background:#FF9900;color:#111}.ab-o:hover{background:#e68a00}
+
+.pwd-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
+.pwd-ov.show{display:flex}
+.pwd-box{background:white;border-radius:10px;padding:28px;width:320px;max-width:90vw}
+.pwd-box h3{font-size:15px;font-weight:700;margin-bottom:8px}
+.pwd-box p{font-size:12px;color:#7F8C8D;margin-bottom:16px}
+.pwd-box input{width:100%;padding:8px 12px;border:1.5px solid #D5D8DC;border-radius:6px;font-size:13px;margin-bottom:10px}
+.pwd-box input:focus{outline:none;border-color:#FF9900}
+.pwd-err{color:#E74C3C;font-size:11px;margin-bottom:8px;display:none}
+.pwd-btns{display:flex;gap:8px;justify-content:flex-end}
+.pwd-btns button{padding:7px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer}
 .ann{display:none;background:#FEF3CD;border-bottom:2px solid #F0AD4E;padding:8px 20px;font-size:12px;color:#7D4E00;align-items:center;gap:10px;flex-shrink:0}
 .ann.show{display:flex}
 .ann strong{font-weight:700}
@@ -263,6 +274,19 @@ body{font-family:Arial,sans-serif;background:#EAEDED;color:#232F3E;height:100vh;
   </div>
 </div>
 
+
+<div class="pwd-ov" id="pwdModal">
+  <div class="pwd-box">
+    <h3>🔒 Acceso Waste Team</h3>
+    <p>Introduce la contraseña para activar el modo de gestión.</p>
+    <input type="password" id="pwdInput" placeholder="Contraseña..." onkeydown="if(event.key==='Enter')checkPwd()">
+    <div class="pwd-err" id="pwdErr">Contraseña incorrecta</div>
+    <div class="pwd-btns">
+      <button class="btn-cancel" onclick="document.getElementById('pwdModal').classList.remove('show')">Cancelar</button>
+      <button class="btn-confirm" onclick="checkPwd()">Entrar</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -278,7 +302,58 @@ function oM(e, cartId, zone) {
   document.getElementById("modal").classList.add("show");
 }
 function closeModal() { document.getElementById("modal").classList.remove("show"); }
-function toggleWT() { isWT = !isWT; renderRequests(lastData); var e=document.getElementById("annEdit"); if(e) e.style.display=isWT?"flex":"none"; if(isWT) loadAnn(); }
+function toggleWT() {
+  if (isWT) {
+    // Logout
+    isWT = false;
+    sessionStorage.removeItem("wtAuth");
+    renderRequests(lastData);
+    var e=document.getElementById("annEdit"); if(e) e.style.display="none";
+    document.querySelector(".rb").textContent = "Waste Team";
+    document.querySelector(".rb").style.background = "rgba(29,185,84,.2)";
+    document.querySelector(".rb").style.color = "#1DB954";
+    showToast("Sesión cerrada", true);
+  } else {
+    if (sessionStorage.getItem("wtAuth") === "1") {
+      activateWT();
+    } else {
+      document.getElementById("pwdModal").classList.add("show");
+      document.getElementById("pwdInput").value = "";
+      document.getElementById("pwdErr").style.display = "none";
+      setTimeout(function(){ document.getElementById("pwdInput").focus(); }, 100);
+    }
+  }
+}
+
+function checkPwd() {
+  var pwd = document.getElementById("pwdInput").value;
+  fetch("/api/wt-auth", {
+    method: "POST", headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({password: pwd})
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if (d.ok) {
+      sessionStorage.setItem("wtAuth", "1");
+      document.getElementById("pwdModal").classList.remove("show");
+      activateWT();
+    } else {
+      document.getElementById("pwdErr").style.display = "block";
+      document.getElementById("pwdInput").value = "";
+      document.getElementById("pwdInput").focus();
+    }
+  });
+}
+
+function activateWT() {
+  isWT = true;
+  renderRequests(lastData);
+  var e=document.getElementById("annEdit"); if(e) e.style.display="flex";
+  loadAnn();
+  var btn = document.querySelector(".rb");
+  btn.textContent = "✓ Waste Team (salir)";
+  btn.style.background = "#1DB954";
+  btn.style.color = "white";
+  showToast("Modo Waste Team activado ✓", true);
+}
 
 function showToast(msg, ok) {
   var t = document.getElementById("toast");
