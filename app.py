@@ -43,7 +43,10 @@ def get_requests():
                            updated_at AT TIME ZONE 'UTC' AS updated_at
                     FROM spill_requests
                     WHERE status != 'done'
-                    ORDER BY created_at DESC
+                       OR updated_at > NOW() - INTERVAL '24 hours'
+                    ORDER BY
+                      CASE WHEN status = 'done' THEN 1 ELSE 0 END,
+                      created_at DESC
                 """)
                 rows = cur.fetchall()
                 result = []

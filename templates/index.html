@@ -389,13 +389,14 @@ function renderRequests(data) {
   lastData = data;
   var list = document.getElementById("reqList");
   var active = data.filter(function(r){ return r.status !== "done"; });
+  var done = data.filter(function(r){ return r.status === "done"; });
   var urgent = active.filter(function(r){
     return (Date.now() - new Date(r.created_at).getTime()) > 4*3600000;
   });
 
   document.getElementById("nO").textContent = active.length;
   document.getElementById("nW").textContent = urgent.length;
-  document.getElementById("nD").textContent = completedToday;
+  document.getElementById("nD").textContent = done.length;
   document.getElementById("reqCount").textContent = active.length;
 
   // Update cart colors in SVG
@@ -417,12 +418,17 @@ function renderRequests(data) {
     }
   });
 
-  if (active.length === 0) {
+  list.innerHTML = "";
+
+  if (active.length === 0 && done.length === 0) {
     list.innerHTML = '<div class="em" id="emptyMsg">&#128722;<br>Sin solicitudes<br>Clic en un carro del mapa</div>';
     return;
   }
 
-  list.innerHTML = "";
+  // Render active requests
+  if (active.length === 0) {
+    list.innerHTML = '<div class="em" style="padding:20px">&#128722; Sin solicitudes activas</div>';
+  }
   active.forEach(function(r){
     var isUrgent = (Date.now() - new Date(r.created_at).getTime()) > 4*3600000;
     var stClass = r.status === "in_progress" ? "si" : (isUrgent ? "sm" : "sp2");
@@ -460,6 +466,28 @@ function renderRequests(data) {
       '<div class="cb">' + notesHtml + wtHtml + '</div>';
     list.appendChild(div);
   });
+
+  // Render completed section
+  if (done.length > 0) {
+    var sep = document.createElement("div");
+    sep.style.cssText = "font-size:10px;font-weight:700;color:#AAB7B8;text-transform:uppercase;letter-spacing:1px;padding:10px 4px 4px;border-top:1px solid #EAEDED;margin-top:4px";
+    sep.textContent = "✓ Completadas hoy (" + done.length + ")";
+    list.appendChild(sep);
+    done.forEach(function(r){
+      var ago = timeAgo(r.updated_at || r.created_at);
+      var notesHtml = '<div class="note-list">';
+      if (r.notes) {
+        r.notes.split("\n").forEach(function(n){ if(n.trim()) notesHtml += '<div class="note-item" style="border-left-color:#1DB954;opacity:.8">' + n + '</div>'; });
+      } else { notesHtml += '<div class="note-empty">Sin notas</div>'; }
+      notesHtml += '</div>';
+      var dDiv = document.createElement("div");
+      dDiv.className = "rc sd2";
+      dDiv.style.opacity = "0.75";
+      dDiv.innerHTML = '<div class="ch" style="background:#EAFAF1"><span class="zp" style="background:#1DB954">' + r.cart_id + '</span><span class="cz">' + r.zone + '</span><span class="cp" style="background:#EAFAF1;color:#1E8449;border:1px solid #82E0AA">✓ Completado</span><span class="tm" style="margin-left:auto">hace ' + ago + '</span></div>' +
+        '<div class="cb">' + notesHtml + '</div>';
+      list.appendChild(dDiv);
+    });
+  }
 }
 
 
